@@ -69,7 +69,7 @@ This monorepo organization includes the following services:
 
 ### Configuration Management
 
-This monorepo uses a shared Renovate configuration to manage dependencies across all repositories. The base configuration is defined in `renovate.json` in this repository and extended by each service.
+This repo contains a shared Renovate configuration to manage dependencies across all repositories. The base configuration is defined in `renovate.json` in this repository and extended by each service.
 
 **Renovate Features:**
 - Automated dependency updates
@@ -92,16 +92,9 @@ This monorepo uses a shared Renovate configuration to manage dependencies across
 - SonarCloud code quality and security analysis
 - Google Cloud IAM for service permissions
 
-## 📄 License
-
-MIT
-
-## 🤝 Contributing
-
-Each repository has its own contribution guidelines. Please see individual repository README files for specific instructions.
 
 ## 🔗 Links
 
-- **Production**: https://recipe-mgmt-dev.web.app
-- **AI Service API**: https://recipe-ai-service-341866919859.europe-west2.run.app
-- **Storage Service API**: https://recipe-storage-service-htubs7zkna-nw.a.run.app
+- **Dev environment**: https://recipe-mgmt-dev.web.app
+- **AI Service API dev environment**: https://recipe-ai-service-341866919859.europe-west2.run.app
+- **Storage Service AP dev environmentI**: https://recipe-storage-service-htubs7zkna-nw.a.run.app
