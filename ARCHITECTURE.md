@@ -316,33 +316,6 @@ graph LR
 - **Network Security**: Cloud Run with VPC connector for private services
 - **Data Encryption**: Firestore encryption at rest and in transit
 
-## Deployment Architecture
-
-### CI/CD Pipeline
-
-```mermaid
-graph LR
-    Dev[Developer] -->|Push| GitHub[GitHub]
-    GitHub -->|Trigger| Actions[GitHub Actions]
-    Actions -->|Build| Docker[Docker Image]
-    Docker -->|Push| Registry[Artifact Registry]
-    Registry -->|Deploy| CloudRun[Cloud Run]
-    
-    Actions -->|Test| Tests[Unit & E2E Tests]
-    Actions -->|Scan| Security[Security Scans]
-    Actions -->|Analyze| SonarCloud[SonarCloud]
-```
-
-**Pipeline Steps**:
-1. Code pushed to GitHub
-2. GitHub Actions triggered
-3. Run linting and tests
-4. Security scanning (Gitleaks, SonarCloud)
-5. Build Docker container
-6. Push to Artifact Registry
-7. Deploy to Cloud Run
-8. Run smoke tests
-
 ### Environment Strategy
 
 - **Development**: `recipe-mgmt-dev` (Firebase project)
@@ -364,24 +337,6 @@ graph LR
 - CPU and memory allocation per service
 - Startup and request timeout configurations
 
-### Performance Optimizations
-
-**Frontend**:
-- Code splitting with Vite
-- Lazy loading of routes
-- Image optimization
-- CDN caching via Firebase Hosting
-
-**Backend**:
-- Connection pooling for Firestore
-- Caching of frequent queries
-- Optimistic UI updates
-- Efficient pagination
-
-**Database**:
-- Indexed queries in Firestore
-- Composite indexes for complex queries
-- Document batching for bulk operations
 
 ## Monitoring & Observability
 
@@ -402,33 +357,5 @@ graph LR
 - **Cloud Trace**: Distributed request tracing across services
 - **Performance Insights**: Identify bottlenecks in AI generation
 
-## Cost Optimization
 
-- **Cloud Run**: Pay only for request handling time
-- **Firestore**: Pay per operation and storage
-- **Vertex AI**: Per-request pricing for Gemini and Imagen
-- **Auto-scaling**: Scale to zero when idle
-- **Caching**: Reduce redundant API calls
 
-## Future Enhancements
-
-### Planned Features
-- [ ] Recipe recommendations based on user preferences
-- [ ] Meal planning and grocery lists
-- [ ] Social features (comments, ratings, follows)
-- [ ] Recipe collections and cookbooks
-- [ ] Multi-language support
-- [ ] Mobile native apps (iOS/Android)
-- [ ] Recipe import from URLs
-- [ ] Nutrition tracking
-- [ ] Cooking timers and notifications
-
-### Technical Improvements
-- [ ] GraphQL API for more efficient queries
-- [ ] Redis caching layer
-- [ ] Event-driven architecture with Pub/Sub
-- [ ] Advanced search with Algolia or Elasticsearch
-- [ ] Production environment setup
-- [ ] Blue-green deployments
-- [ ] Canary releases
-- [ ] A/B testing framework
