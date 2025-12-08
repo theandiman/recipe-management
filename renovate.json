@@ -1,0 +1,88 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate configuration for Recipe Management monorepo projects",
+  "extends": [
+    "config:base"
+  ],
+  "timezone": "Europe/London",
+  "schedule": [
+    "after 10pm every weekday",
+    "before 5am every weekday",
+    "every weekend"
+  ],
+  "labels": ["dependencies"],
+  "assignees": ["theandiman"],
+  "reviewers": ["theandiman"],
+  "commitMessagePrefix": "chore(deps):",
+  "separateMajorMinor": true,
+  "separateMinorPatch": false,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "packageRules": [
+    {
+      "description": "Group internal shared package updates",
+      "matchPackageNames": ["@theandiman/recipe-management-shared"],
+      "groupName": "recipe-management-shared",
+      "automerge": false,
+      "labels": ["internal-dependency"]
+    },
+    {
+      "description": "Auto-merge patch updates for non-major dependencies",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "ignoreTests": false
+    },
+    {
+      "description": "Group minor and patch updates for testing libraries",
+      "matchPackagePatterns": ["^@testing-library/", "^vitest", "^jest", "^@vitest/"],
+      "groupName": "testing libraries",
+      "automerge": false
+    },
+    {
+      "description": "Group Spring Boot and related dependencies",
+      "matchPackagePatterns": ["^org\\.springframework"],
+      "groupName": "spring",
+      "automerge": false
+    },
+    {
+      "description": "Group Firebase dependencies",
+      "matchPackagePatterns": ["^firebase", "^@firebase/"],
+      "groupName": "firebase",
+      "automerge": false
+    },
+    {
+      "description": "Group React dependencies",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "groupName": "react",
+      "automerge": false
+    },
+    {
+      "description": "Group build tool updates",
+      "matchPackagePatterns": ["^vite", "^@vitejs/", "^maven", "^gradle"],
+      "groupName": "build tools",
+      "automerge": false
+    },
+    {
+      "description": "Disable major version updates for stable dependencies",
+      "matchUpdateTypes": ["major"],
+      "enabled": true,
+      "automerge": false,
+      "labels": ["major-update"]
+    }
+  ],
+  "maven": {
+    "enabled": true
+  },
+  "npm": {
+    "enabled": true
+  },
+  "docker": {
+    "enabled": true,
+    "pinDigests": false
+  }
+}
