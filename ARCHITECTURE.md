@@ -55,13 +55,13 @@ graph TB
     Firebase -.->|Verify JWT| StorageService
     Firebase -.->|Verify JWT| AIService
     
-    style WebUI fill:#61DAFB
-    style AIService fill:#6DB33F
-    style StorageService fill:#6DB33F
-    style Firestore fill:#FFA000
-    style Firebase fill:#FFA000
-    style Gemini fill:#4285F4
-    style Imagen fill:#4285F4
+    style WebUI fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style AIService fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
+    style StorageService fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
+    style Firestore fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style Firebase fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style Gemini fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style Imagen fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
 ```
 
 ## Service Details
