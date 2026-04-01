@@ -68,6 +68,7 @@ jobs:
     permissions:
       contents: read
       actions: write
+      packages: read
     outputs:
       version: ${{ steps.version.outputs.version }}
 
@@ -101,9 +102,19 @@ jobs:
           elif [[ -f version.sh ]]; then
             chmod +x version.sh
             if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-              echo "Main branch build detected - bumping patch version for release"
-              ./version.sh bump-patch
-              VERSION=$(./version.sh current | sed 's/Current version: //')
+              echo "Main branch build detected - deriving next patch version for release without mutating tracked files"
+              CURRENT_VERSION=$(./version.sh current | sed 's/Current version: //')
+              if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+                MAJOR="${BASH_REMATCH[1]}"
+                MINOR="${BASH_REMATCH[2]}"
+                PATCH="${BASH_REMATCH[3]}"
+                SUFFIX="${BASH_REMATCH[4]}"
+                NEXT_PATCH=$((PATCH + 1))
+                VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}${SUFFIX}"
+              else
+                echo "Warning: CURRENT_VERSION '$CURRENT_VERSION' does not match expected MAJOR.MINOR.PATCH format; using it as-is"
+                VERSION="$CURRENT_VERSION"
+              fi
             else
               echo "Feature/PR branch build detected - using current version"
               VERSION=$(./version.sh current | sed 's/Current version: //')

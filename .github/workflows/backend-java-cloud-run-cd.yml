@@ -83,7 +83,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > /tmp/sa-key.json
+          echo "${{ secrets.GCP_SA_KEY }}" > /tmp/sa-key.json
           gcloud auth activate-service-account --key-file=/tmp/sa-key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
@@ -95,7 +95,7 @@ jobs:
           VERSION=$(cat .build_version)
           echo "Tagging image with version: $VERSION"
 
-          gcloud auth configure-docker "$REGION-docker.pkg.dev"
+          gcloud auth configure-docker "$GCP_REGISTRY"
 
           docker build \
             -f "${{ inputs.dockerfile_path }}" \
@@ -125,7 +125,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > /tmp/sa-key.json
+          echo "${{ secrets.GCP_SA_KEY }}" > /tmp/sa-key.json
           gcloud auth activate-service-account --key-file=/tmp/sa-key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
@@ -169,7 +169,7 @@ jobs:
             -m 5 \
             -r zap-report.html \
             -w zap-report.md \
-            -J zap-report.json || true
+            -J zap-report.json
 
           if [ -f "zap-reports/zap-report.html" ]; then
             echo "✓ ZAP scan complete - reports generated successfully"

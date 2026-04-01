@@ -27,9 +27,9 @@ The reusable workflows assume the consuming service repository contains:
 - `test-deployment.sh` for post-deployment smoke tests
 - `version.sh` when using `version-script` versioning
 
-If `version.sh` is absent, the CI workflow can fall back to short SHA versioning by setting `version_strategy: short-sha`.
+If `version.sh` is absent, the CI workflow automatically falls back to short-SHA versioning, regardless of the `version_strategy` input.
 
-By default, `version_strategy: version-script` mirrors the current `ai-service` behavior on `main`.
+Use `version_strategy: short-sha` only when you want to force short-SHA versioning even when a `version.sh` script is present. This mirrors the current `ai-service` behavior on `main`: script-based versioning when `version.sh` exists, with automatic short-SHA fallback otherwise.
 
 ## Example consumer workflow
 
@@ -45,13 +45,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   ci:
-    uses: theandiman/recipe-management/.github/workflows/backend-java-ci.yml@main
+    uses: theandiman/recipe-management/.github/workflows/backend-java-ci.yml@v1
     with:
       version_strategy: version-script
       run_sonar: false
@@ -59,7 +63,7 @@ jobs:
 
   cd:
     needs: ci
-    uses: theandiman/recipe-management/.github/workflows/backend-java-cloud-run-cd.yml@main
+    uses: theandiman/recipe-management/.github/workflows/backend-java-cloud-run-cd.yml@v1
     with:
       service_name: recipe-ai-service
       artifact_registry_repository: recipe-ai
@@ -96,7 +100,7 @@ with:
 
 ## Required secrets in consuming repos
 
-- `GCP_SA_KEY`
+- `GCP_SA_KEY` — raw service account key JSON (not base64-encoded)
 - `GCP_PROJECT_ID`
 - `SONAR_TOKEN` when `run_sonar: true`
 
