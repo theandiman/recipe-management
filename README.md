@@ -78,9 +78,20 @@ This repo contains a shared Renovate configuration to manage dependencies across
 - Auto-merge for patch updates
 - Scheduled updates during off-hours
 
+### Shared GitHub Actions
+
+This repo can also act as the source of reusable GitHub Actions workflows for backend services.
+
+The initial reusable backend workflow design is based on the current `recipe-management-ai-service` pipeline on `main`, with optional inputs for service-specific differences.
+
+- `./.github/workflows/backend-java-ci.yml` provides a reusable Java/Spring Boot CI pipeline
+- `./.github/workflows/backend-java-cloud-run-cd.yml` provides a reusable Cloud Run CD pipeline
+- `./docs/BACKEND_REUSABLE_WORKFLOWS.md` shows how service repos can wire them in later
+
 ## 📚 Documentation
 
 - [Architecture Overview](./ARCHITECTURE.md)
+- [Reusable Backend Workflows](./docs/BACKEND_REUSABLE_WORKFLOWS.md)
 - [API Documentation - AI Service](https://theandiman.github.io/recipe-management-ai-service/)
 - [API Documentation - Storage Service](https://theandiman.github.io/recipe-management-storage-service/)
 

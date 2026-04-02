@@ -1,0 +1,178 @@
+name: Reusable Backend Java CI
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        description: Java version to use
+        required: false
+        default: '21'
+        type: string
+      version_strategy:
+        description: Versioning strategy (`version-script` or `short-sha`)
+        required: false
+        default: version-script
+        type: string
+      test_command:
+        description: Command to run unit/integration tests
+        required: false
+        default: mvn test
+        type: string
+      verify_command:
+        description: Command to run static verification/linting
+        required: false
+        default: mvn verify -DskipTests
+        type: string
+      package_command:
+        description: Command to package the application
+        required: false
+        default: mvn package -DskipTests
+        type: string
+      build_artifact_glob:
+        description: Glob for build artifacts to upload on main
+        required: false
+        default: target/*.jar
+        type: string
+      build_artifact_name:
+        description: Artifact name used between CI and CD workflows
+        required: false
+        default: build-artifacts
+        type: string
+      run_sonar:
+        description: Whether to run SonarCloud in the CI job
+        required: false
+        default: false
+        type: boolean
+      sonar_project_key:
+        description: SonarCloud project key when `run_sonar` is enabled
+        required: false
+        default: ''
+        type: string
+      sonar_organization:
+        description: SonarCloud organization key
+        required: false
+        default: theandiman
+        type: string
+    secrets:
+      SONAR_TOKEN:
+        required: false
+    outputs:
+      version:
+        description: Build version emitted by the CI job
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      packages: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+          token: ${{ github.token }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: temurin
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ inputs.version_strategy }}" == "short-sha" ]]; then
+            VERSION="${GITHUB_SHA::7}"
+          elif [[ -f version.sh ]]; then
+            chmod +x version.sh
+            if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+              echo "Main branch build detected - deriving next patch version for release without mutating tracked files"
+              CURRENT_VERSION=$(./version.sh current | sed 's/Current version: //')
+              if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+                MAJOR="${BASH_REMATCH[1]}"
+                MINOR="${BASH_REMATCH[2]}"
+                PATCH="${BASH_REMATCH[3]}"
+                SUFFIX="${BASH_REMATCH[4]}"
+                NEXT_PATCH=$((PATCH + 1))
+                VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}${SUFFIX}"
+              else
+                echo "Warning: CURRENT_VERSION '$CURRENT_VERSION' does not match expected MAJOR.MINOR.PATCH format; using it as-is"
+                VERSION="$CURRENT_VERSION"
+              fi
+            else
+              echo "Feature/PR branch build detected - using current version"
+              VERSION=$(./version.sh current | sed 's/Current version: //')
+            fi
+          else
+            echo "version.sh not found - falling back to short SHA versioning"
+            VERSION="${GITHUB_SHA::7}"
+          fi
+
+          echo "Building with version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "$VERSION" > .build_version
+
+      - name: Configure Maven for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                        https://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+
+      - name: Run tests
+        run: ${{ inputs.test_command }}
+
+      - name: Run linting
+        run: ${{ inputs.verify_command }}
+
+      - name: Build application
+        run: ${{ inputs.package_command }}
+
+      - name: SonarCloud Scan
+        if: inputs.run_sonar && inputs.sonar_project_key != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B sonar:sonar \
+            -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
+            -Dsonar.organization=${{ inputs.sonar_organization }} \
+            -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Upload build artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ inputs.build_artifact_name }}
+          path: |
+            ${{ inputs.build_artifact_glob }}
+            .build_version
+          retention-days: 1
+          include-hidden-files: true
