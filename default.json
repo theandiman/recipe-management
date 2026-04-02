@@ -16,6 +16,8 @@
   "commitMessagePrefix": "chore(deps):",
   "separateMajorMinor": true,
   "separateMinorPatch": false,
+  "platformAutomerge": true,
+  "rebaseWhen": "behind-base-branch",
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
   "vulnerabilityAlerts": {
@@ -31,11 +33,26 @@
       "labels": ["internal-dependency"]
     },
     {
-      "description": "Auto-merge patch updates for non-major dependencies",
+      "description": "Auto-merge minor updates",
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "ignoreTests": false,
+      "addLabels": ["type: minor"]
+    },
+    {
+      "description": "Auto-merge patch updates",
       "matchUpdateTypes": ["patch"],
       "automerge": true,
       "automergeType": "pr",
-      "ignoreTests": false
+      "ignoreTests": false,
+      "addLabels": ["type: patch"]
+    },
+    {
+      "description": "Label major version updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["type: major", "major-update"]
     },
     {
       "description": "Group minor and patch updates for testing libraries",
@@ -66,13 +83,6 @@
       "matchPackagePatterns": ["^vite", "^@vitejs/", "^maven", "^gradle"],
       "groupName": "build tools",
       "automerge": false
-    },
-    {
-      "description": "Disable major version updates for stable dependencies",
-      "matchUpdateTypes": ["major"],
-      "enabled": true,
-      "automerge": false,
-      "labels": ["major-update"]
     }
   ],
   "maven": {
