@@ -69,14 +69,28 @@ This monorepo organization includes the following services:
 
 ### Configuration Management
 
-This repo contains a shared Renovate configuration to manage dependencies across all repositories. The base configuration is defined in `renovate.json` in this repository and extended by each service.
+This repo contains a shared Renovate configuration to manage dependencies across all repositories. The base configuration is defined in [`default.json`](./default.json) and extended by each service via their own `renovate.json`.
+
+To use the shared config in a new repo, create a `renovate.json` in its root:
+
+```json
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>theandiman/recipe-management"
+  ]
+}
+```
+
+Any repo-specific overrides (e.g. extra package rules or label sets) can be added alongside the `extends` key.
 
 **Renovate Features:**
 - Automated dependency updates
 - Security vulnerability alerts
-- Grouped updates for related packages
-- Auto-merge for patch updates
-- Scheduled updates during off-hours
+- Grouped updates for related packages (Spring, Firebase, React, build tools, testing libraries)
+- Auto-merge for minor and patch updates with `platformAutomerge`
+- Scheduled updates during off-hours (Europe/London timezone)
+- PRs rebased when behind base branch
 
 ### Shared GitHub Actions
 
