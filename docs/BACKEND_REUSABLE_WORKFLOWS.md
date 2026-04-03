@@ -95,7 +95,7 @@ with:
   artifact_registry_repository: recipe-storage
   version_strategy: version-script
   run_sonar: true
-  sonar_project_key: theandiman_recipe-management-storage-service
+  sonar_project_key: theandiman_recipe-management-service
 ```
 
 ## Required secrets in consuming repos

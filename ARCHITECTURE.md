@@ -125,7 +125,7 @@ graph TB
 
 ### Storage Service
 
-**Repository**: [recipe-management-storage-service](https://github.com/theandiman/recipe-management-storage-service)
+**Repository**: [recipe-management-service](https://github.com/theandiman/recipe-management-service)
 
 **Tech Stack**:
 - Java 21
@@ -156,7 +156,7 @@ graph TB
 - Cloud Build for CI/CD
 - Artifact Registry for container storage
 
-**API Documentation**: https://theandiman.github.io/recipe-management-storage-service/
+**API Documentation**: https://theandiman.github.io/recipe-management-service/
 
 ### Shared Library
 
