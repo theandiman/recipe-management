@@ -48,8 +48,9 @@ on:
         type: boolean
       zap_rules:
         description: |
-          Optional ZAP baseline rules config. Each line is "alertId ACTION (description)".
-          Valid actions: IGNORE, WARN, FAIL. Example: "10049 IGNORE (Non-Storable Content)"
+          Optional ZAP baseline rules config. Each line should be formatted as
+          "alertId\tACTION\t(description)". Use escaped tab sequences (\t) between columns.
+          Valid actions: IGNORE, WARN, FAIL. Example: "10049\tIGNORE\t(Non-Storable Content)"
         required: false
         default: ''
         type: string
@@ -202,7 +203,7 @@ jobs:
 
           RULES_ARGS=""
           if [[ -n "${{ inputs.zap_rules }}" ]]; then
-            printf '%s\n' "${{ inputs.zap_rules }}" > zap-reports/zap-rules.conf
+            printf '%b\n' "${{ inputs.zap_rules }}" > zap-reports/zap-rules.conf
             RULES_ARGS="-c /zap/wrk/zap-rules.conf"
             echo "Using ZAP rules config:"
             cat zap-reports/zap-rules.conf
