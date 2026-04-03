@@ -83,6 +83,15 @@
       "matchPackagePatterns": ["^vite", "^@vitejs/", "^maven", "^gradle"],
       "groupName": "build tools",
       "automerge": false
+    },
+    {
+      "description": "Auto-merge shared pipeline workflow updates",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["theandiman/recipe-management"],
+      "groupName": "shared pipeline",
+      "automerge": true,
+      "automergeType": "pr",
+      "addLabels": ["internal-pipeline"]
     }
   ],
   "maven": {
@@ -94,5 +103,8 @@
   "docker": {
     "enabled": true,
     "pinDigests": false
+  },
+  "github-actions": {
+    "enabled": true
   }
 }
