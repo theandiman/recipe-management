@@ -12,7 +12,7 @@ This monorepo organization includes the following services:
 
 - **[recipe-management-frontend](https://github.com/theandiman/recipe-management-frontend)** - React/TypeScript web application
 - **[recipe-management-ai-service](https://github.com/theandiman/recipe-management-ai-service)** - AI recipe generation service (Java/Spring Boot)
-- **[recipe-management-storage-service](https://github.com/theandiman/recipe-management-storage-service)** - Recipe storage and retrieval service (Java/Spring Boot)
+- **[recipe-management-service](https://github.com/theandiman/recipe-management-service)** - Recipe management service (Java/Spring Boot)
 - **[recipe-management-infrastructure](https://github.com/theandiman/recipe-management-infrastructure)** - Infrastructure as Code (Terraform/Pulumi)
 - **[recipe-management-shared](https://github.com/theandiman/recipe-management-shared)** - Shared models and types (TypeScript/Java)
 
@@ -107,7 +107,7 @@ The initial reusable backend workflow design is based on the current `recipe-man
 - [Architecture Overview](./ARCHITECTURE.md)
 - [Reusable Backend Workflows](./docs/BACKEND_REUSABLE_WORKFLOWS.md)
 - [API Documentation - AI Service](https://theandiman.github.io/recipe-management-ai-service/)
-- [API Documentation - Storage Service](https://theandiman.github.io/recipe-management-storage-service/)
+- [API Documentation - Recipe Management Service](https://theandiman.github.io/recipe-management-service/)
 
 ## 🔐 Security
 
