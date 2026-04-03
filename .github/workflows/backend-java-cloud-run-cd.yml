@@ -57,10 +57,17 @@ on:
         default: true
         type: boolean
     secrets:
-      GCP_SA_KEY:
-        required: true
       GCP_PROJECT_ID:
         required: true
+      GCP_SA_KEY:
+        description: Service account key JSON. Required when not using Workload Identity Federation.
+        required: false
+      GCP_WORKLOAD_IDENTITY_PROVIDER:
+        description: WIF provider resource name. Required when not using GCP_SA_KEY.
+        required: false
+      GCP_DEPLOY_SA:
+        description: Service account email for WIF impersonation. Required when not using GCP_SA_KEY.
+        required: false
 
 jobs:
   docker:
@@ -70,6 +77,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -81,7 +89,16 @@ jobs:
           name: ${{ inputs.build_artifact_name }}
           path: .
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (WIF)
+        if: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Authenticate to Google Cloud (SA Key)
+        if: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER == '' }}
         run: |
           echo "${{ secrets.GCP_SA_KEY }}" > /tmp/sa-key.json
           gcloud auth activate-service-account --key-file=/tmp/sa-key.json
@@ -113,6 +130,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions:
       actions: read
+      id-token: write
     outputs:
       service-url: ${{ steps.deploy.outputs.service-url }}
 
@@ -123,7 +141,16 @@ jobs:
           name: ${{ inputs.build_artifact_name }}
           path: .
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (WIF)
+        if: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Authenticate to Google Cloud (SA Key)
+        if: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER == '' }}
         run: |
           echo "${{ secrets.GCP_SA_KEY }}" > /tmp/sa-key.json
           gcloud auth activate-service-account --key-file=/tmp/sa-key.json
