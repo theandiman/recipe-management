@@ -103,5 +103,6 @@ with:
 - `GCP_SA_KEY` — raw service account key JSON (not base64-encoded)
 - `GCP_PROJECT_ID`
 - `SONAR_TOKEN` when `run_sonar: true`
+- `GIT_PAT` — PAT/fine-grained token required by the reusable CD workflow so version bump commits can be pushed back to protected `main`
 
-The workflows use the built-in `GITHUB_TOKEN` for checkout and GitHub Packages access.
+The workflows still use the built-in `GITHUB_TOKEN` for GitHub Packages access, but the reusable CD workflow assumes consuming repositories provide `GIT_PAT` for the version bump checkout/push.
