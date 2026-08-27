@@ -10,13 +10,13 @@ The default behavior and example wiring are based on the current `recipe-managem
   - Builds Java 21 Spring Boot services
   - Configures Maven for GitHub Packages
   - Runs tests, verification, packaging
+  - Uses Git SHA (`short-sha`) for build versioning
   - Optionally runs SonarCloud
   - Uploads build artifacts on `main`
 - `.github/workflows/backend-java-cloud-run-cd.yml`
   - Builds and pushes Docker images to Artifact Registry
-  - Deploys to Cloud Run
+  - Deploys to Cloud Run using Git SHA tag
   - Optionally runs OWASP ZAP and post-deployment smoke tests
-  - Optionally bumps the next development version when `version.sh` is present
 
 ## Expected files in a service repo
 
@@ -25,15 +25,10 @@ The reusable workflows assume the consuming service repository contains:
 - `pom.xml`
 - `Dockerfile`
 - `test-deployment.sh` for post-deployment smoke tests
-- `version.sh` when using `version-script` versioning
-
-If `version.sh` is absent, the CI workflow automatically falls back to short-SHA versioning, regardless of the `version_strategy` input.
-
-Use `version_strategy: short-sha` only when you want to force short-SHA versioning even when a `version.sh` script is present. This mirrors the current `ai-service` behavior on `main`: script-based versioning when `version.sh` exists, with automatic short-SHA fallback otherwise.
 
 ## Example consumer workflow
 
-A backend service can create a thin wrapper workflow like this. This example intentionally matches the current `recipe-management-ai-service` setup on `main`:
+A backend service can create a thin wrapper workflow like this:
 
 ```yaml
 name: CI/CD Pipeline
@@ -46,7 +41,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   packages: read
 
 concurrency:
@@ -55,54 +50,28 @@ concurrency:
 
 jobs:
   ci:
-    uses: theandiman/recipe-management/.github/workflows/backend-java-ci.yml@v1
+    uses: theandiman/recipe-management/.github/workflows/backend-java-ci.yml@main
     with:
-      version_strategy: version-script
       run_sonar: false
     secrets: inherit
 
   cd:
     needs: ci
-    uses: theandiman/recipe-management/.github/workflows/backend-java-cloud-run-cd.yml@v1
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    uses: theandiman/recipe-management/.github/workflows/backend-java-cloud-run-cd.yml@main
     with:
       service_name: recipe-ai-service
       artifact_registry_repository: recipe-ai
       deployment_test_script: test-deployment.sh
       run_security_scan: true
       run_post_deploy_tests: true
-      run_version_bump: true
     secrets: inherit
-```
-
-## Service-specific inputs
-
-### AI service style wiring
-
-```yaml
-with:
-  service_name: recipe-ai-service
-  artifact_registry_repository: recipe-ai
-  version_strategy: version-script
-```
-
-### Storage service style wiring
-
-This is a deliberate extension from the `ai-service` baseline, adding SonarCloud inputs used by storage service:
-
-```yaml
-with:
-  service_name: recipe-storage-service
-  artifact_registry_repository: recipe-storage
-  version_strategy: version-script
-  run_sonar: true
-  sonar_project_key: theandiman_recipe-management-service
 ```
 
 ## Required secrets in consuming repos
 
-- `GCP_SA_KEY` — raw service account key JSON (not base64-encoded)
+- `GCP_SA_KEY` or WIF credentials (`GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_DEPLOY_SA`)
 - `GCP_PROJECT_ID`
 - `SONAR_TOKEN` when `run_sonar: true`
-- `GIT_PAT` — PAT/fine-grained token required by the reusable CD workflow so version bump commits can be pushed back to protected `main`
 
-The workflows still use the built-in `GITHUB_TOKEN` for GitHub Packages access, but the reusable CD workflow assumes consuming repositories provide `GIT_PAT` for the version bump checkout/push.
+The workflows use the built-in `GITHUB_TOKEN` for GitHub Packages access.
