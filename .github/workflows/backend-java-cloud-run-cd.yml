@@ -59,11 +59,6 @@ on:
         required: false
         default: true
         type: boolean
-      run_post_deploy_tests:
-        description: Whether to run the post-deployment smoke tests
-        required: false
-        default: true
-        type: boolean
       use_wif:
         description: Use Workload Identity Federation instead of a service account key
         required: false
