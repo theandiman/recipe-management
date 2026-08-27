@@ -59,8 +59,8 @@ on:
         required: false
         default: true
         type: boolean
-      run_version_bump:
-        description: Whether to prepare the next development version on main
+      run_post_deploy_tests:
+        description: Whether to run the post-deployment smoke tests
         required: false
         default: true
         type: boolean
@@ -82,8 +82,8 @@ on:
         description: Service account email for WIF impersonation. Required when not using GCP_SA_KEY.
         required: false
       GIT_PAT:
-        description: Token used to push version bump commits back to `main` from consuming repositories.
-        required: true
+        description: Token used to push version bump commits back to `main` (deprecated).
+        required: false
 
 jobs:
   docker:
@@ -258,55 +258,3 @@ jobs:
           echo "Running post-deployment tests against $SERVICE_URL"
           chmod +x "${{ inputs.deployment_test_script }}"
           "./${{ inputs.deployment_test_script }}" "$SERVICE_URL"
-
-  version-bump:
-    name: Prepare Next Development Version
-    runs-on: ubuntu-latest
-    needs:
-      - deploy
-      - security-scan
-      - post-deployment-test
-    if: >-
-      github.ref == 'refs/heads/main' &&
-      inputs.run_version_bump &&
-      always() &&
-      needs.deploy.result == 'success' &&
-      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped') &&
-      (needs.post-deployment-test.result == 'success' || needs.post-deployment-test.result == 'skipped')
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 2
-          token: ${{ secrets.GIT_PAT }}
-
-      - name: Prepare next development version
-        shell: bash
-        run: |
-          if [[ ! -f version.sh ]]; then
-            echo "version.sh not found - skipping development version bump"
-            exit 0
-          fi
-
-          if git log -1 --pretty=format:'%an' | grep -q "CI Bot"; then
-            echo "This commit was already a version bump by CI Bot, skipping to prevent infinite loop"
-            exit 0
-          fi
-
-          echo "Preparing next development version..."
-          chmod +x version.sh
-          ./version.sh bump-patch
-          ./version.sh add-snapshot
-
-          NEXT_VERSION=$(./version.sh current | sed 's/Current version: //')
-          echo "Next development version prepared: $NEXT_VERSION"
-
-          git config --global user.email "ci@recipe-management.com"
-          git config --global user.name "CI Bot"
-
-          git add pom.xml
-          git commit -m "Bump version to $NEXT_VERSION for next development cycle"
-          git push origin HEAD:main
