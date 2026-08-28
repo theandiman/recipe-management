@@ -92,10 +92,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.build_artifact_name }}
           path: .
@@ -147,7 +147,7 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v6.0.0
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.build_artifact_name }}
           path: .
@@ -227,7 +227,7 @@ jobs:
 
       - name: Upload ZAP Reports as Artifacts
         if: hashFiles('zap-reports/zap-report.html') != ''
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: zap-security-reports
           path: zap-reports/zap-report.*
@@ -244,7 +244,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run post-deployment tests
         run: |
