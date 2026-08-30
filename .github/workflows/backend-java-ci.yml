@@ -96,8 +96,10 @@ jobs:
       - name: Determine version
         id: version
         shell: bash
+        env:
+          VERSION_STRATEGY: ${{ inputs.version_strategy }}
         run: |
-          if [[ "${{ inputs.version_strategy }}" == "version-script" ]] && [[ -f version.sh ]]; then
+          if [[ "$VERSION_STRATEGY" == "version-script" ]] && [[ -f version.sh ]]; then
             chmod +x version.sh
             VERSION=$(./version.sh current | sed 's/Current version: //')
           else
@@ -127,23 +129,31 @@ jobs:
           EOF
 
       - name: Run tests
-        run: ${{ inputs.test_command }}
+        env:
+          TEST_COMMAND: ${{ inputs.test_command }}
+        run: $TEST_COMMAND
 
       - name: Run linting
-        run: ${{ inputs.verify_command }}
+        env:
+          VERIFY_COMMAND: ${{ inputs.verify_command }}
+        run: $VERIFY_COMMAND
 
       - name: Build application
-        run: ${{ inputs.package_command }}
+        env:
+          PACKAGE_COMMAND: ${{ inputs.package_command }}
+        run: $PACKAGE_COMMAND
 
       - name: SonarCloud Scan
         if: inputs.run_sonar && inputs.sonar_project_key != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ inputs.sonar_project_key }}
+          SONAR_ORGANIZATION: ${{ inputs.sonar_organization }}
         run: |
           mvn -B sonar:sonar \
-            -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
-            -Dsonar.organization=${{ inputs.sonar_organization }} \
+            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+            -Dsonar.organization="$SONAR_ORGANIZATION" \
             -Dsonar.host.url=https://sonarcloud.io
 
       - name: Upload build artifacts
