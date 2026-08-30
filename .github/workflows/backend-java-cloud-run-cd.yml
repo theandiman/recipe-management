@@ -252,7 +252,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run Nuclei API DAST Scan
-        uses: projectdiscovery/nuclei-action@v1
+        uses: projectdiscovery/nuclei-action@v3.1.0
         with:
           target: "${{ needs.deploy.outputs.service-url }}"
           flags: "-severity critical,high,medium -tags api,misconfig,exposure,cve"
